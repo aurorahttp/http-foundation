@@ -3,7 +3,6 @@
 namespace Panlatent\Http;
 
 use BadMethodCallException;
-use InvalidArgumentException;
 
 class Context implements ContextInterface
 {
@@ -41,6 +40,11 @@ class Context implements ContextInterface
         $this->parent = $context;
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     */
     public function __call($name, $arguments)
     {
         if ($this->parent) {
@@ -49,35 +53,72 @@ class Context implements ContextInterface
         throw new BadMethodCallException();
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     * @throws UnknownPropertyException
+     */
     public function __get($name)
     {
-        if ($this->parent) {
+        $getter = 'get' . $name;
+        if (method_exists($this, $getter)) {
+            return $this->$getter();
+        } elseif ($this->parent) {
             return $this->parent->$name;
+        } elseif (method_exists($this, 'set' . $name)) {
+            throw new ProtectedPropertyException('Getting write-only property: ' . get_class($this) . '::' . $name);
         }
-        throw new InvalidArgumentException("Invalid context attribute: $name");
+        throw new UnknownPropertyException("Invalid context attribute: $name");
     }
 
+    /**
+     * @param $name
+     * @param $value
+     * @throws UnknownPropertyException
+     */
     public function __set($name, $value)
     {
-        if ($this->parent) {
-            return $this->parent->$name = $value;
+        $setter = 'set' . $name;
+        if (method_exists($this, $setter)) {
+            $this->$setter($value);
+        } elseif ($this->parent) {
+            $this->parent->$name = $value;
+        } elseif (method_exists($this, 'get' . $name)) {
+            throw new ProtectedPropertyException('Setting read-only property: ' . get_class($this) . '::' . $name);
+        } else {
+            throw new UnknownPropertyException('Setting unknown property: ' . get_class($this) . '::' . $name);
         }
-        throw new InvalidArgumentException("Invalid context attribute: $name");
     }
 
+    /**
+     * @param $name
+     * @return bool
+     */
     public function __isset($name)
     {
-        if ($this->parent) {
+        $getter = 'get' . $name;
+        if (method_exists($this, $getter)) {
+            return $this->$getter() !== null;
+        } elseif ($this->parent) {
             return isset($this->parent->$name);
         }
-        throw new InvalidArgumentException("Invalid context attribute: $name");
+
+        return false;
     }
 
+    /**
+     * @param $name
+     */
     public function __unset($name)
     {
-        if ($this->parent) {
+        $setter = 'set' . $name;
+        if (method_exists($this, $setter)) {
+            $this->$setter(null);
+        } elseif ($this->parent) {
             unset($this->parent->$name);
+        } elseif (method_exists($this, 'get' . $name)) {
+            throw new ProtectedPropertyException('Unset read-only property: ' . get_class($this) . '::' .
+                $name);
         }
-        throw new InvalidArgumentException("Invalid context attribute: $name");
     }
 }
