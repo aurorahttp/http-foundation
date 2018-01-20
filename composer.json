@@ -1,5 +1,5 @@
 {
-    "name": "aurorahttp/http-foundation",
+    "name": "aurora/http-foundation",
     "description": "HTTP foundation interfaces and classes",
     "type": "library",
     "license": "MIT",
