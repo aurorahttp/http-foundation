@@ -1,6 +1,6 @@
 <?php
 
-namespace Panlatent\Http;
+namespace Aurora\Http;
 
 interface StatusCodeInterface extends \Fig\Http\Message\StatusCodeInterface
 {
