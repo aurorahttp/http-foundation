@@ -2,7 +2,7 @@
 
 namespace Aurora\Http;
 
-class TransactionException extends Exception implements StatusInterface
+class ResponsiveException extends Exception implements StatusInterface
 {
     /**
      * @var int

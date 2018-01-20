@@ -11,7 +11,7 @@ namespace Aurora\Http;
 
 use InvalidArgumentException;
 
-class ClientException extends TransactionException
+class ClientException extends ResponsiveException
 {
     public function __construct($message = "", $statusCode = 0, \Exception $previous = null)
     {
